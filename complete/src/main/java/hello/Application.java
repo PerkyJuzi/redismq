@@ -1,6 +1,7 @@
 package hello;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +37,8 @@ public class Application {
 	}
 
 	@Bean
-	Receiver receiver(CountDownLatch latch) {
-		return new Receiver(latch);
+	Receiver receiver(CountDownLatch latch, StringRedisTemplate template) {
+		return new Receiver(latch, template);
 	}
 
 	@Bean
@@ -58,7 +59,9 @@ public class Application {
 		CountDownLatch latch = ctx.getBean(CountDownLatch.class);
 
 		LOGGER.info("Sending message...");
-		template.convertAndSend("chat", "Hello from Redis!");
+		template.convertAndSend("chat", "Hello from Redis, 又!");
+		
+		template.opsForValue().set("testdata", "中文value", 60*10, TimeUnit.SECONDS);  
 
 		latch.await();
 
